@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "ES2016", // Let's keep TS source relatively modern
+    "module": "ESNext", // Use modern import/export in your source TS
+    "sourceMap": true, // Still potentially useful for debugging
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+
+    /* Environment Specific */
+    "lib": ["ES2016"], // Only include core ECMAScript library, NO "DOM"
+
+    /* Advanced Options */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Bundler Integration */
+    "noEmit": true, // Recommended: Use tsc ONLY for type checking
+
+    /* Project Structure */
+    "rootDir": "./src",
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

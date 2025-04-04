@@ -1,0 +1,19 @@
+{
+  "name": "geto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js", 
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"build": "npm run typecheck && esbuild src/index.ts --bundle --outfile=dist/bundle.js --format=iife --platform=neutral --target=es6",
+		"build:dev": "esbuild src/index.ts --bundle --outfile=dist/bundle.js --format=iife --platform=neutral --target=es6 --sourcemap",
+		"watch": "esbuild src/index.ts --bundle --outfile=dist/bundle.js --format=iife --platform=neutral --target=es6 --sourcemap --watch"
+	},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.25.2",
+    "typescript": "^5.8.2"
+  }
+}
