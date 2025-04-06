@@ -26,3 +26,5 @@ yarn-error.log*
 # Temp files
 *.tmp
 *.temp
+
+contents/code

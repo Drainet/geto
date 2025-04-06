@@ -1,0 +1,19 @@
+{
+  "KPlugin": {
+    "Name": "geto",
+    "Description": "Geto KWin script",
+    "Icon": "preferences-system-windows",
+    "Authors": [
+      {
+        "Email": "drain.cy.chang@gmail.com", "Name": "Drain"
+      }
+    ],
+    "Id": "geto",
+    "Version": "0.1",
+    "License": "MIT",
+    "Website": "https://github.com/drainet/geto"
+  },
+  "X-Plasma-API": "javascript",
+  "X-Plasma-MainScript": "code/main.js",
+  "KPackageStructure": "KWin/Script"
+}

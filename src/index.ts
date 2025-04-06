@@ -1,14 +1,21 @@
-import { log } from './logger';
+import {isApplicationWindow, log} from "./util";
 
-log("KWin Script Starting...");
-// --- Add your KWin API interactions here ---
-// Example: Accessing KWin's workspace API (if available)
-// if (typeof workspace !== 'undefined') {
-//    log(`Current desktop: ${workspace.currentDesktop}`);
-//} else {
-//    log("Workspace API not found.");
-//}
-log("KWin Script Loaded.");
+log("--workspace window start--")
+workspace.windowList()
+    .filter(isApplicationWindow)
+    .forEach((window) => {
+        log(`workspace window: ${window.resourceName} ${window.internalId} ${window.pid}`)
+    })
+log("--workspace window end--")
 
-// Note: KWin scripts often don't "exit" like node scripts,
-// they might register callbacks or run logic upon loading.
+workspace.windowAdded.connect((window) => {
+    log(`window added: ${window.resourceName} ${window.internalId} ${window.pid}`)
+})
+
+workspace.windowRemoved.connect((window) => {
+    log(`window removed: ${window.resourceName} ${window.internalId} ${window.pid}`)
+})
+
+workspace.windowActivated.connect((window) => {
+    log(`window activated: ${window.resourceName} ${window.internalId} ${window.pid}`)
+})
