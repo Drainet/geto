@@ -2,6 +2,12 @@ interface Signal<T> {
     connect(callback: (t: T) => void)
 }
 
+enum LayoutDirection {
+    Floating = 0,
+    Horizontal = 1,
+    Vertical = 2
+}
+
 declare const KWin
 
 declare const console: {
@@ -22,9 +28,23 @@ declare const workspace: {
 }
 
 interface Output {
+    geometry: Rect,
+    devicePixelRatio: number
+    name: string
+}
+
+interface Tile {
+    absoluteGeometry: Rect
+    windows: Window[]
+    tiles: Tile[]
+    split: (direction: number) => Tile[]
+    isLayout: boolean
+    canBeRemoved: boolean
+    remove: () => void
 }
 
 interface TileManager {
+    rootTile: Tile
 }
 
 interface Rect {
@@ -59,6 +79,7 @@ interface Window {
     skipPager: boolean
     skipSwitcher: boolean
     minSize: Size
+    tile?: Tile | null
 }
 
 declare function registerShortcut(title: string, text: string, keySequence: string, callback: () => void)
