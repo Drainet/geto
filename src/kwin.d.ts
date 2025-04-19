@@ -2,7 +2,7 @@ interface Signal<T> {
     connect(callback: (t: T) => void)
 }
 
-enum LayoutDirection {
+const enum LayoutDirection {
     Floating = 0,
     Horizontal = 1,
     Vertical = 2
@@ -80,6 +80,7 @@ interface Window {
     skipSwitcher: boolean
     minSize: Size
     tile?: Tile | null
+    output: Output
 }
 
 declare function registerShortcut(title: string, text: string, keySequence: string, callback: () => void)

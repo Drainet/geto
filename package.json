@@ -6,7 +6,7 @@
 	"scripts": {
 		"typecheck": "tsc --noEmit",
 		"build": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6",
-		"build:dev": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6; $HOME/bin/kwin_reinstall",
+		"build:dev": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6; $HOME/bin/kwin_reinstall; $HOME/bin/kwin_journal;",
 		"watch": "esbuild src/index.ts --bundle --outfile=dist/bundle.js --format=iife --platform=neutral --target=es6 --sourcemap --watch"
 	},
   "keywords": [],

@@ -1,4 +1,3 @@
-
 export const X_WAYLAND_VIDEO_BRIDGE_RESOURCE_NAME = "xwaylandvideobridge"
 
 export const isApplicationWindow = (window: Window) => {
@@ -27,6 +26,16 @@ export const logWindowInfo = (event: string, window: Window) => {
         frameGeometry: window.frameGeometry,
         skipTaskbar: window.skipTaskbar,
         minSize: window.minSize
+    }, null, 2))
+}
+
+export const logTileInfo = (event: string, tile: Tile) => {
+    log(JSON.stringify({
+        event,
+        isLayout: tile.isLayout,
+        absoluteGeometry: tile.absoluteGeometry,
+        windows: tile.windows.map(window => window.resourceName),
+        canBeRemoved: tile.canBeRemoved
     }, null, 2))
 }
 
