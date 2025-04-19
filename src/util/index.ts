@@ -39,3 +39,21 @@ export const logTileInfo = (event: string, tile: Tile) => {
     }, null, 2))
 }
 
+
+const collectRemovableTiles =  (rootTile: Tile): Tile[]  => {
+    const results: Tile[] = []
+    rootTile.tiles.forEach((tile) => {
+        if (tile.canBeRemoved) {
+            results.push(tile)
+        }
+        results.push(...collectRemovableTiles(tile))
+    })
+    return results
+}
+
+export const cleanUpTiles = (rootTile: Tile) => {
+    const allRemovableTiles = collectRemovableTiles(rootTile)
+    allRemovableTiles.forEach((tile) => {
+        tile.remove()
+    })
+}

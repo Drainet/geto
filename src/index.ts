@@ -1,21 +1,10 @@
-import {isApplicationWindow, log, logTileInfo, logWindowInfo} from "./util";
+import {isApplicationWindow, cleanUpTiles, log, logTileInfo, logWindowInfo} from "./util";
 import {LayoutDirection} from "./layout_direction";
 
 log("------------------ new geto kwin script session started ------------------")
 
 const screenWindowMap: Record<string, Window[]> = {}
 const screenTileMap: Record<string, Tile[]> = {}
-
-const collectRemovableTiles =  (rootTile: Tile): Tile[]  => {
-    const results: Tile[] = []
-    rootTile.tiles.forEach((tile) => {
-        if (tile.canBeRemoved) {
-            results.push(tile)
-        }
-        results.push(...collectRemovableTiles(tile))
-    })
-    return results
-}
 
 workspace.windowList().forEach((window) => {
     if (!screenWindowMap[window.output.name]) {
@@ -46,10 +35,7 @@ workspace.screens.forEach((screen) => {
 
     const tileManager = workspace.tilingForScreen(workspace.screens[0]);
     const rootTile = tileManager.rootTile
-    const allRemovableTiles = collectRemovableTiles(rootTile)
-    allRemovableTiles.forEach((tile) => {
-        tile.remove()
-    })
+    cleanUpTiles(rootTile)
     if (targetWindows.length === 1) {
         targetWindows[0].tile = rootTile
         return
