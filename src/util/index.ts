@@ -40,20 +40,59 @@ export const logTileInfo = (event: string, tile: Tile) => {
 }
 
 
-const collectRemovableTiles =  (rootTile: Tile): Tile[]  => {
+const collectAllTiles = (tile: Tile): Tile[] => {
     const results: Tile[] = []
-    rootTile.tiles.forEach((tile) => {
-        if (tile.canBeRemoved) {
-            results.push(tile)
-        }
-        results.push(...collectRemovableTiles(tile))
+    results.push(tile)
+    tile.tiles.forEach((tile) => {
+        results.push(...collectAllTiles(tile))
     })
     return results
 }
 
 export const cleanUpTiles = (rootTile: Tile) => {
-    const allRemovableTiles = collectRemovableTiles(rootTile)
+    const allRemovableTiles = collectAllTiles(rootTile)
     allRemovableTiles.forEach((tile) => {
-        tile.remove()
+        tile.windows.forEach((window) => {
+            window.tile = null
+        })
+        if (tile.canBeRemoved) {
+            tile.remove()
+        }
+    })
+}
+
+const collectTileTreeInfo = (
+    tile: Tile,
+    depth: number = 0,
+    parentIndex: number,
+    currentIndex: number,
+    infoArray: string[][]
+) => {
+    if (depth >= infoArray.length) {
+        infoArray.push([])
+    }
+    const arrayForCurrentDepth = infoArray[depth]
+    const rect = tile.absoluteGeometry;
+    const windowNames = tile.windows.map((window) => window.resourceName).join(",")
+    const debugInfo = `pI: ${parentIndex}, i: ${currentIndex}, r: {x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height}}, w: {${windowNames}}, l: ${tile.isLayout}, cR: ${tile.canBeRemoved}`
+    arrayForCurrentDepth.push(debugInfo)
+    for (let i = 0; i < tile.tiles.length; i++) {
+        const childTile = tile.tiles[i]
+        collectTileTreeInfo(
+            childTile,
+            depth + 1,
+            currentIndex,
+            i,
+            infoArray
+        )
+    }
+}
+
+export const logTileTreeInfo = (rootTile: Tile) => {
+    const infoArray: string[][] = []
+    collectTileTreeInfo(rootTile, 0, 0, 0, infoArray)
+    infoArray.forEach((infoStrings) => {
+        const resultString = `${infoStrings.map((s) => `[${s}]`).join(",")} \n`
+        log(resultString)
     })
 }
