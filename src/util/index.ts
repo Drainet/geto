@@ -48,6 +48,16 @@ const collectAllTiles = (tile: Tile): Tile[] => {
     })
     return results
 }
+export const windowForTile = (tile: Tile): Window | undefined => {
+    const windowList = workspace.windowList()
+    for (let i = 0; i < windowList.length; i++) {
+        const window = windowList[i]
+        if (window.tile === tile) {
+            return window
+        }
+    }
+    return undefined
+}
 
 export const cleanUpTiles = (rootTile: Tile) => {
     const allRemovableTiles = collectAllTiles(rootTile)
@@ -55,6 +65,10 @@ export const cleanUpTiles = (rootTile: Tile) => {
         tile.windows.forEach((window) => {
             window.tile = null
         })
+        const window = windowForTile(tile)
+        if (window) {
+            window.tile = null
+        }
         if (tile.canBeRemoved) {
             tile.remove()
         }
@@ -74,7 +88,7 @@ const collectTileTreeInfo = (
     const arrayForCurrentDepth = infoArray[depth]
     const rect = tile.absoluteGeometry;
     const windowNames = tile.windows.map((window) => window.resourceName).join(",")
-    const debugInfo = `pI: ${parentIndex}, i: ${currentIndex}, r: {x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height}}, w: {${windowNames}}, l: ${tile.isLayout}, cR: ${tile.canBeRemoved}`
+    const debugInfo = `pI: ${parentIndex}, i: ${currentIndex}, r: {x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height}}, w: {${windowForTile(tile)?.resourceName}}, l: ${tile.isLayout}, cR: ${tile.canBeRemoved}`
     arrayForCurrentDepth.push(debugInfo)
     for (let i = 0; i < tile.tiles.length; i++) {
         const childTile = tile.tiles[i]
@@ -92,7 +106,7 @@ export const logTileTreeInfo = (rootTile: Tile) => {
     const infoArray: string[][] = []
     collectTileTreeInfo(rootTile, 0, 0, 0, infoArray)
     infoArray.forEach((infoStrings) => {
-        const resultString = `${infoStrings.map((s) => `[${s}]`).join(",")} \n`
+        const resultString = `${infoStrings.map((s) => `[${s}]`).join(",\n")} `
         log(resultString)
     })
 }
