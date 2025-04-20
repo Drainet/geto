@@ -41,6 +41,7 @@ interface Tile {
     isLayout: boolean
     canBeRemoved: boolean
     remove: () => void
+    parent: Tile | null
 }
 
 interface TileManager {
