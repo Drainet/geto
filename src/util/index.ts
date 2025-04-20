@@ -40,7 +40,7 @@ export const logTileInfo = (event: string, tile: Tile) => {
 }
 
 
-const collectAllTiles = (tile: Tile): Tile[] => {
+export const collectAllTiles = (tile: Tile): Tile[] => {
     const results: Tile[] = []
     results.push(tile)
     tile.tiles.forEach((tile) => {
@@ -48,6 +48,32 @@ const collectAllTiles = (tile: Tile): Tile[] => {
     })
     return results
 }
+
+const tileExistInTiles = (tile: Tile, rootTile: Tile): boolean => {
+    if (tile === rootTile) {
+        return true
+    }
+    for (let i = 0; i < rootTile.tiles.length; i++) {
+        const childTile = rootTile.tiles[i]
+        const existInChild = tileExistInTiles(tile, childTile)
+        if (existInChild) {
+            return true
+        }
+    }
+    return false
+}
+
+export const screenForTile = (tile: Tile): Output | undefined => {
+    for (let i = 0; i < workspace.screens.length; i++) {
+        const screen = workspace.screens[i]
+        const tileManager = workspace.tilingForScreen(screen)
+        if (tileExistInTiles(tile, tileManager.rootTile)) {
+            return screen
+        }
+    }
+    return undefined
+}
+
 export const windowForTile = (tile: Tile): Window | undefined => {
     const windowList = workspace.windowList()
     for (let i = 0; i < windowList.length; i++) {

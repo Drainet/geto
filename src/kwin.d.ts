@@ -67,6 +67,7 @@ interface Window {
     active: boolean
     resourceName: string
     minimizedChanged: Signal<void>
+    outputChanged: Signal<void>
     internalId: string
     pid: number
     windowRole: string

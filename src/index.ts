@@ -3,7 +3,7 @@ import {
     cleanUpTiles,
     log,
     logTileTreeInfo,
-    windowForTile
+    windowForTile, screenForTile, collectAllTiles
 } from "./util";
 import {LayoutDirection} from "./layout_direction";
 
@@ -26,13 +26,13 @@ const parentTileForTile = (targetTile: Tile, rootTile: Tile): Tile | undefined =
 
 workspace.windowAdded.connect((window) => {
     if (isApplicationWindow(window)) {
-        addWindowToTile(window)
+        addWindowToTile({window})
     }
 })
 
 workspace.windowRemoved.connect((window) => {
     if (isApplicationWindow(window)) {
-        removeWindowFromTile(window)
+        removeFromTile({window})
     }
 })
 
@@ -41,22 +41,55 @@ workspace.windowList().forEach((window) => {
     window.minimizedChanged.connect(() => {
         const tileManager = workspace.tilingForScreen(window.output);
         if (window.minimized) {
-            removeWindowFromTile(window)
+            removeFromTile({window})
             log(`------ info of screen ${window.output.name} after ${window.resourceName} minimized ------`)
             logTileTreeInfo(tileManager.rootTile)
             log(`------ end info of screen ${window.output.name} ------`)
         } else {
-            addWindowToTile(window)
+            addWindowToTile({window})
             log(`------ info of screen ${window.output.name} after ${window.resourceName} un-minimized ------`)
             logTileTreeInfo(tileManager.rootTile)
             log(`------ end info of screen ${window.output.name} ------`)
         }
     })
+    window.outputChanged.connect(() => {
+        workspace.screens.forEach((screen) => {
+            const allTiles = collectAllTiles(workspace.tilingForScreen(screen).rootTile)
+            allTiles.forEach((tile) => {
+                if (!tile.tiles.length && tile.canBeRemoved && !windowForTile(tile)) {
+                    removeFromTile({tile, screen})
+                }
+            })
+        })
+        addWindowToTile({window})
+    })
 })
 
-const removeWindowFromTile = (window: Window) => {
-    const tileManager = workspace.tilingForScreen(window.output)
-    const tile = window.tile
+const removeFromTile = (
+    arg: { window: Window, screen?: Output } | { tile: Tile, screen: Output }
+) => {
+    const isWindowArg = (arg: any): arg is { window: Window, screen?: Output } => {
+        return 'window' in arg;
+    }
+    let window: Window | undefined
+    let tile: Tile
+    let screen: Output | undefined
+    if (isWindowArg(arg)) {
+        window = arg.window
+        if (!window.tile) {
+            log("error, window's tile can't be null")
+            return
+        }
+        tile = window.tile
+        screen = arg.screen ?? window.output
+    } else {
+        window = undefined
+        tile = arg.tile
+        screen = arg.screen
+    }
+    const tileManager = workspace.tilingForScreen(screen)
+
+
     if (!tile) {
         log("error, tile can't be null")
         return
@@ -69,18 +102,21 @@ const removeWindowFromTile = (window: Window) => {
         const indexOfOtherTile = (indexOfCurrentTile + 1) % 2
         const tileForOtherWindow = childTiles[indexOfOtherTile];
         const otherWindow = windowForTile(tileForOtherWindow)
-        log(`other window name: ${otherWindow?.resourceName}`)
         if (!otherWindow) {
             log("error, otherWindow can't be null")
             return
         }
-        window.tile = null
+        if (window) {
+            window.tile = null
+        }
         tile?.remove()
         otherWindow.tile = null
         tileForOtherWindow.remove()
         otherWindow.tile = parentTile
     } else {
-        window.tile = null
+        if (window) {
+            window.tile = null
+        }
         if (tile?.canBeRemoved) {
             tile?.remove()
         }
@@ -88,12 +124,16 @@ const removeWindowFromTile = (window: Window) => {
 }
 
 
-const addWindowToTile = (window: Window) => {
-    const tileManager = workspace.tilingForScreen(window.output)
+const addWindowToTile = (arg: {
+    window: Window,
+    screen?: Output
+}) => {
+    const {window, screen} = arg
+    const tileManager = workspace.tilingForScreen(screen ?? window.output)
     const rootTile = tileManager.rootTile
     const windowForRootTile = windowForTile(rootTile);
     if (windowForRootTile) {
-        const childTiles = rootTile.split(LayoutDirection.Vertical)
+        const childTiles = rootTile.split(LayoutDirection.Horizontal)
         windowForRootTile.tile = null
         windowForRootTile.tile = childTiles[0]
         window.tile = childTiles[1]
@@ -102,7 +142,7 @@ const addWindowToTile = (window: Window) => {
         if (childTiles.length) {
             let maxSizeTile = childTiles[0]
             childTiles.forEach((childTile) => {
-                if (childTile.absoluteGeometry.height > maxSizeTile.absoluteGeometry.height) {
+                if (childTile.absoluteGeometry.width > maxSizeTile.absoluteGeometry.width) {
                     maxSizeTile = childTile
                 }
             })
@@ -111,7 +151,7 @@ const addWindowToTile = (window: Window) => {
                 log("error, shouldn't be undefined")
                 return
             }
-            const newChildTiles = maxSizeTile.split(LayoutDirection.Vertical)
+            const newChildTiles = maxSizeTile.split(LayoutDirection.Horizontal)
             originWindowForMaxSizeTile.tile = null
             originWindowForMaxSizeTile.tile = newChildTiles[0]
             window.tile = newChildTiles[1]
@@ -138,7 +178,7 @@ for (let i = 0; i < workspace.screens.length; i++) {
     logTileTreeInfo(tileManager.rootTile)
     log(`------ end info of screen ${screen.name} ------`)
     targetWindows.forEach((window) => {
-        addWindowToTile(window)
+        addWindowToTile({window})
     })
     log(`------ info of screen ${screen.name} after tile ------`)
     logTileTreeInfo(tileManager.rootTile)
