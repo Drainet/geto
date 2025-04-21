@@ -1,6 +1,6 @@
-import {TileHelper} from "../tile_management";
+import {TileHelper} from "../tile_helper";
 
 export const windowOutputChangedHandler = (window: Window) => () => {
     TileHelper.removeNoWindowTiles()
-    TileHelper.addWindowToTile({window})
+    TileHelper.addWindowToScreen({window})
 }
