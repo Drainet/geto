@@ -83,6 +83,12 @@ interface Window {
     minSize: Size
     tile?: Tile | null
     output: Output
+    splash: boolean
+    utility: boolean
+    popupWindow: boolean
+    popupMenu: boolean
+    dialog: boolean
+    specialWindow: boolean
 }
 
 declare function registerShortcut(title: string, text: string, keySequence: string, callback: () => void)
