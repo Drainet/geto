@@ -50,6 +50,17 @@ const moveWindowLeft = () => {
             activeWindow.tile = null
             otherWindow.tile = tile
             activeWindow.tile = otherWindowTile
+        } else if (otherWindow && otherWindowTile.absoluteGeometry.x === tile.absoluteGeometry.x) {
+            otherWindow.tile = null
+            activeWindow.tile = null
+            tile.remove()
+            otherWindowTile.remove()
+            const childTiles = parentTile.split(LayoutDirection.Horizontal)
+            activeWindow.tile = childTiles[0]
+            otherWindow.tile = childTiles[1]
+            const screen = activeWindow.output
+            const tileManager = workspace.tilingForScreen(screen)
+            logTileTreeInfo(tileManager.rootTile)
         }
     }
 }
@@ -68,6 +79,17 @@ const moveWindowRight = () => {
             activeWindow.tile = null
             otherWindow.tile = tile
             activeWindow.tile = otherWindowTile
+        } else if (otherWindow && otherWindowTile.absoluteGeometry.x === tile.absoluteGeometry.x) {
+            otherWindow.tile = null
+            activeWindow.tile = null
+            tile.remove()
+            otherWindowTile.remove()
+            const childTiles = parentTile.split(LayoutDirection.Horizontal)
+            otherWindow.tile = childTiles[0]
+            activeWindow.tile = childTiles[1]
+            const screen = activeWindow.output
+            const tileManager = workspace.tilingForScreen(screen)
+            logTileTreeInfo(tileManager.rootTile)
         }
     }
 }
@@ -81,7 +103,41 @@ const moveWindowUp = () => {
         const otherWindowIndex = (currentWindowIndex + 1) % 2
         const otherWindowTile = sameLevelTiles[otherWindowIndex];
         const otherWindow = windowForTile(otherWindowTile)
-        if (otherWindow && otherWindowTile.absoluteGeometry.y === tile.absoluteGeometry.y) {
+        if (otherWindow && otherWindowTile.absoluteGeometry.y < tile.absoluteGeometry.y) {
+            otherWindow.tile = null
+            activeWindow.tile = null
+            otherWindow.tile = tile
+            activeWindow.tile = otherWindowTile
+        } else if (otherWindow && otherWindowTile.absoluteGeometry.y === tile.absoluteGeometry.y) {
+            otherWindow.tile = null
+            activeWindow.tile = null
+            tile.remove()
+            otherWindowTile.remove()
+            const childTiles = parentTile.split(LayoutDirection.Vertical)
+            activeWindow.tile = childTiles[0]
+            otherWindow.tile = childTiles[1]
+            const screen = activeWindow.output
+            const tileManager = workspace.tilingForScreen(screen)
+            logTileTreeInfo(tileManager.rootTile)
+        }
+    }
+}
+const moveWindowDown = () => {
+    const activeWindow = workspace.activeWindow
+    const tile = workspace.activeWindow?.tile
+    const parentTile = tile?.parent
+    const sameLevelTiles = parentTile?.tiles
+    if (activeWindow && tile && parentTile && sameLevelTiles?.length) {
+        const currentWindowIndex = sameLevelTiles.indexOf(tile)
+        const otherWindowIndex = (currentWindowIndex + 1) % 2
+        const otherWindowTile = sameLevelTiles[otherWindowIndex];
+        const otherWindow = windowForTile(otherWindowTile)
+        if (otherWindow && otherWindowTile.absoluteGeometry.y > tile.absoluteGeometry.y) {
+            otherWindow.tile = null
+            activeWindow.tile = null
+            otherWindow.tile = tile
+            activeWindow.tile = otherWindowTile
+        } else if (otherWindow && otherWindowTile.absoluteGeometry.y === tile.absoluteGeometry.y) {
             otherWindow.tile = null
             activeWindow.tile = null
             tile.remove()
@@ -94,9 +150,6 @@ const moveWindowUp = () => {
             logTileTreeInfo(tileManager.rootTile)
         }
     }
-}
-const moveWindowDown = () => {
-    log("moveWindowDown")
 }
 
 registerShortcut("EnlargeWindow", "EnlargeWindow", "", enlargeWindow)
