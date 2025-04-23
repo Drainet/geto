@@ -89,6 +89,9 @@ interface Window {
     popupMenu: boolean
     dialog: boolean
     specialWindow: boolean
+
+    //custom property, not from kwin
+    minimizedDate?: Date
 }
 
 declare function registerShortcut(title: string, text: string, keySequence: string, callback: () => void)

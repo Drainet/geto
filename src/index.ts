@@ -151,6 +151,22 @@ const moveWindowDown = () => {
     }
 }
 
+const unMinimizePrevMinimizedWindow = () => {
+    const minimizedWindows = workspace.windowList()
+        .filter(isApplicationWindow)
+        .filter((window) => window.minimized)
+    let targetWindow: Window | undefined
+    for (let i = 0; i < minimizedWindows.length; i++) {
+        const current = minimizedWindows[i]
+        if ((current.minimizedDate?.getTime() ?? 0) > (targetWindow?.minimizedDate?.getTime() ?? 0)) {
+            targetWindow = current
+        }
+    }
+    if (targetWindow) {
+        targetWindow.minimized = false
+    }
+}
+
 
 registerShortcut("EnlargeWindow", "EnlargeWindow", "", enlargeWindow)
 registerShortcut("MoveWindowLeft", "MoveWindowLeft", "", moveWindowLeft)
@@ -158,5 +174,6 @@ registerShortcut("MoveWindowRight", "MoveWindowRight", "", moveWindowRight)
 registerShortcut("MoveWindowUp", "MoveWindowUp", "", moveWindowUp)
 registerShortcut("MoveWindowDown", "MoveWindowDown", "", moveWindowDown)
 registerShortcut("ResetAllTiles", "ResetAllTiles", "", TileHelper.resetAllWindowTiles)
+registerShortcut("UnMinimizePrevMinimizedWindow", "UnMinimizePrevMinimizedWindow", "", unMinimizePrevMinimizedWindow)
 
 TileHelper.resetAllWindowTiles()
