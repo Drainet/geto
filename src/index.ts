@@ -30,7 +30,6 @@ workspace.windowList().forEach((window) => {
     window.outputChanged.connect(windowOutputChangedHandler(window))
 })
 
-TileHelper.resetAllWindowTiles()
 
 const enlargeWindow = () => {
     log("enlarge window")
@@ -152,8 +151,12 @@ const moveWindowDown = () => {
     }
 }
 
+
 registerShortcut("EnlargeWindow", "EnlargeWindow", "", enlargeWindow)
 registerShortcut("MoveWindowLeft", "MoveWindowLeft", "", moveWindowLeft)
 registerShortcut("MoveWindowRight", "MoveWindowRight", "", moveWindowRight)
 registerShortcut("MoveWindowUp", "MoveWindowUp", "", moveWindowUp)
 registerShortcut("MoveWindowDown", "MoveWindowDown", "", moveWindowDown)
+registerShortcut("ResetAllTiles", "ResetAllTiles", "", TileHelper.resetAllWindowTiles)
+
+TileHelper.resetAllWindowTiles()
