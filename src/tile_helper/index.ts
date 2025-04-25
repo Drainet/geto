@@ -145,9 +145,51 @@ const resetAllWindowTiles = () => {
 
 }
 
+const moveWindowToDirection = (arg: {
+    window: Window | undefined,
+    shouldSwitchWithOther: (tileRect: Rect, otherTileRect: Rect) => boolean
+    shouldChangeLayoutDirection: (tileRect: Rect, otherTileRect: Rect) =>
+        { should: boolean, indexAfterChangeLayoutDirection: number }
+}) => {
+    const {window, shouldSwitchWithOther, shouldChangeLayoutDirection} = arg
+    const tile = window?.tile
+    const parentTile = tile?.parent
+    const sameLevelTiles = parentTile?.tiles
+    if (window && tile && parentTile && sameLevelTiles?.length) {
+        const currentWindowIndex = sameLevelTiles.indexOf(tile)
+        const otherWindowIndex = (currentWindowIndex + 1) % 2
+        const otherWindowTile = sameLevelTiles[otherWindowIndex];
+        const otherWindow = windowForTile(otherWindowTile)
+        const {
+            should: shouldChangeLayout,
+            indexAfterChangeLayoutDirection
+        } = shouldChangeLayoutDirection(tile.absoluteGeometry, otherWindowTile.absoluteGeometry)
+        if (otherWindow && shouldChangeLayout) {
+            const newLayoutDirection = tile.absoluteGeometry.y === otherWindowTile.absoluteGeometry.y ?
+                LayoutDirection.Vertical : LayoutDirection.Horizontal
+            otherWindow.tile = null
+            window.tile = null
+            tile.remove()
+            otherWindowTile.remove()
+            const childTiles = parentTile.split(newLayoutDirection)
+            otherWindow.tile = childTiles[(indexAfterChangeLayoutDirection + 1) % 2]
+            window.tile = childTiles[indexAfterChangeLayoutDirection]
+        } else if (otherWindow && shouldSwitchWithOther(tile.absoluteGeometry, otherWindowTile.absoluteGeometry)) {
+            otherWindow.tile = null
+            window.tile = null
+            otherWindow.tile = tile
+            window.tile = otherWindowTile
+        }
+        const screen = window.output
+        const tileManager = workspace.tilingForScreen(screen)
+        logTileTreeInfo(tileManager.rootTile)
+    }
+}
+
 export const TileHelper = {
     removeFromTile,
     addWindowToScreen,
+    moveWindowToDirection,
     removeNoWindowTiles,
     resetAllWindowTiles
 }
