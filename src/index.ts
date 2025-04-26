@@ -1,86 +1,60 @@
-import {
-    isApplicationWindow,
-    log, logTileTreeInfo,
-} from "./util";
-import {TileHelper} from "./tile_helper";
-import {LayoutDirection, QtEdge} from "./kwin_enum";
+import {isApplicationWindow, log, TileUtil} from "./util";
+import {TileMode} from "./tile_helper";
 import {windowMinimizedChangedHandler, windowOutputChangedHandler} from "./signal_handlers";
+import {TileHelperProvider} from "./tile_helper/tile_helper_provider";
 
 log("------------------ new geto kwin script session started ------------------")
 
+const currentTileMode = TileMode.Default
+
 workspace.windowAdded.connect((window) => {
     if (isApplicationWindow(window)) {
-        TileHelper.addWindowToScreen({window})
-        window.minimizedChanged.connect(windowMinimizedChangedHandler(window))
-        window.outputChanged.connect(windowOutputChangedHandler(window))
+        TileHelperProvider[currentTileMode].addWindowToScreen({window})
+        window.minimizedChanged.connect(windowMinimizedChangedHandler({
+            window,
+            tileHelperProvider: TileHelperProvider,
+            currentTileModeProvider: () => {
+                return currentTileMode
+            }
+        }))
+        window.outputChanged.connect(windowOutputChangedHandler({
+            window,
+            tileHelperProvider: TileHelperProvider,
+            currentTileModeProvider: () => {
+                return currentTileMode
+            }
+        }))
     }
 })
 
 workspace.windowRemoved.connect((window) => {
     if (isApplicationWindow(window)) {
-        TileHelper.removeFromTile({window})
+        TileHelperProvider[currentTileMode].removeFromTile({window})
     }
 })
 
 workspace.windowList().forEach((window) => {
     window.tile = null
-    window.minimizedChanged.connect(windowMinimizedChangedHandler(window))
-    window.outputChanged.connect(windowOutputChangedHandler(window))
+    window.minimizedChanged.connect(windowMinimizedChangedHandler({
+        window,
+        tileHelperProvider: TileHelperProvider,
+        currentTileModeProvider: () => {
+            return currentTileMode
+        }
+    }))
+    window.outputChanged.connect(windowOutputChangedHandler({
+        window,
+        tileHelperProvider: TileHelperProvider,
+        currentTileModeProvider: () => {
+            return currentTileMode
+        }
+    }))
 })
 
 
 const enlargeWindow = () => {
     log("enlarge window")
 }
-
-const moveWindowLeft = () => TileHelper.moveWindowToDirection({
-    window: workspace.activeWindow,
-    shouldSwitchWithOther: (tileRect, otherTileRect) =>
-        tileRect.x > otherTileRect.x,
-    shouldChangeLayoutDirection: (tileRect, otherTileRect) => {
-        return {
-            should: tileRect.x === otherTileRect.x,
-            indexAfterChangeLayoutDirection: 0
-        }
-    }
-})
-
-const moveWindowRight = () => TileHelper.moveWindowToDirection({
-    window: workspace.activeWindow,
-    shouldSwitchWithOther: (tileRect, otherTileRect) =>
-        tileRect.x < otherTileRect.x,
-    shouldChangeLayoutDirection: (tileRect, otherTileRect) => {
-        return {
-            should: tileRect.x === otherTileRect.x,
-            indexAfterChangeLayoutDirection: 1
-        }
-    }
-})
-
-const moveWindowUp = () => TileHelper.moveWindowToDirection({
-    window: workspace.activeWindow,
-    shouldSwitchWithOther: (tileRect, otherTileRect) =>
-        tileRect.y > otherTileRect.y,
-    shouldChangeLayoutDirection: (tileRect, otherTileRect) => {
-        return {
-            should: tileRect.y === otherTileRect.y,
-            indexAfterChangeLayoutDirection: 0
-        }
-    }
-})
-
-const moveWindowDown = () => TileHelper.moveWindowToDirection({
-    window: workspace.activeWindow,
-    shouldSwitchWithOther: (tileRect, otherTileRect) =>
-        tileRect.y < otherTileRect.y,
-    shouldChangeLayoutDirection: (tileRect, otherTileRect) => {
-        return {
-            should: tileRect.y === otherTileRect.y,
-            indexAfterChangeLayoutDirection: 1
-        }
-    }
-})
-
 
 const unMinimizePrevMinimizedWindow = () => {
     const minimizedWindows = workspace.windowList()
@@ -99,12 +73,26 @@ const unMinimizePrevMinimizedWindow = () => {
 }
 
 
-registerShortcut("GetoEnlargeWindow", "GetoEnlargeWindow", "", enlargeWindow)
-registerShortcut("GetoMoveWindowLeft", "GetoMoveWindowLeft", "", moveWindowLeft)
-registerShortcut("GetoMoveWindowRight", "GetoMoveWindowRight", "", moveWindowRight)
-registerShortcut("GetoMoveWindowUp", "GetoMoveWindowUp", "", moveWindowUp)
-registerShortcut("GetoMoveWindowDown", "GetoMoveWindowDown", "", moveWindowDown)
-registerShortcut("GetoResetAllTiles", "GetoResetAllTiles", "", TileHelper.resetAllWindowTiles)
-registerShortcut("GetoUnMinimizePrevMinimizedWindow", "GetoUnMinimizePrevMinimizedWindow", "", unMinimizePrevMinimizedWindow)
+const switchMode = () => {
+}
 
-TileHelper.resetAllWindowTiles()
+registerShortcut("GetoEnlargeWindow", "GetoEnlargeWindow", "", enlargeWindow)
+registerShortcut("GetoMoveWindowLeft", "GetoMoveWindowLeft", "", () => {
+    TileHelperProvider[currentTileMode].moveWindowLeft()
+})
+registerShortcut("GetoMoveWindowRight", "GetoMoveWindowRight", "", () => {
+    TileHelperProvider[currentTileMode].moveWindowRight()
+})
+registerShortcut("GetoMoveWindowUp", "GetoMoveWindowUp", "", () => {
+    TileHelperProvider[currentTileMode].moveWindowUp()
+})
+registerShortcut("GetoMoveWindowDown", "GetoMoveWindowDown", "", () => {
+    TileHelperProvider[currentTileMode].moveWindowDown()
+})
+registerShortcut("GetoResetAllTiles", "GetoResetAllTiles", "", () => {
+    TileUtil.resetAllWindowTiles(TileHelperProvider[currentTileMode])
+})
+registerShortcut("GetoUnMinimizePrevMinimizedWindow", "GetoUnMinimizePrevMinimizedWindow", "", unMinimizePrevMinimizedWindow)
+registerShortcut("GetoSwitchMode", "GetoSwitchMode", "", switchMode)
+
+TileUtil.resetAllWindowTiles(TileHelperProvider[currentTileMode])
