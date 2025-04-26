@@ -1,8 +1,9 @@
 import {
     isApplicationWindow,
-    log,
+    log, logTileTreeInfo,
 } from "./util";
 import {TileHelper} from "./tile_helper";
+import {LayoutDirection, QtEdge} from "./kwin_enum";
 import {windowMinimizedChangedHandler, windowOutputChangedHandler} from "./signal_handlers";
 
 log("------------------ new geto kwin script session started ------------------")

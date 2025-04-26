@@ -35,6 +35,8 @@ interface Output {
 
 interface Tile {
     absoluteGeometry: Rect
+    relativeGeometry: Rect
+    resizeByPixels: (size: number, edge: number) => void
     windows: Window[]
     tiles: Tile[]
     split: (direction: number) => Tile[]

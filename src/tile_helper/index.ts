@@ -1,5 +1,5 @@
 import {cleanUpTiles, collectAllTiles, isApplicationWindow, log, logTileTreeInfo, windowForTile} from "../util";
-import {LayoutDirection} from "../layout_direction";
+import {LayoutDirection} from "../kwin_enum";
 
 const removeFromTile = (
     arg: { window: Window } | { tile: Tile }
