@@ -2,12 +2,6 @@ interface Signal<T> {
     connect(callback: (t: T) => void)
 }
 
-const enum LayoutDirection {
-    Floating = 0,
-    Horizontal = 1,
-    Vertical = 2
-}
-
 declare const KWin
 
 declare const console: {
@@ -24,6 +18,7 @@ declare const workspace: {
     activeWindow?: Window,
     screens: Output[]
     stackingOrder: Window[]
+    raiseWindow(window: Window)
     tilingForScreen: (output: Output) => TileManager
 }
 

@@ -5,7 +5,7 @@ import {TileHelperProvider} from "./tile_helper/tile_helper_provider";
 
 log("------------------ new geto kwin script session started ------------------")
 
-const currentTileMode = TileMode.Default
+let currentTileMode = TileMode.Default
 
 workspace.windowAdded.connect((window) => {
     if (isApplicationWindow(window)) {
@@ -30,6 +30,12 @@ workspace.windowAdded.connect((window) => {
 workspace.windowRemoved.connect((window) => {
     if (isApplicationWindow(window)) {
         TileHelperProvider[currentTileMode].removeFromTile({window})
+    }
+})
+
+workspace.windowActivated.connect((window) => {
+    if (isApplicationWindow(window)) {
+        TileHelperProvider[currentTileMode].handleWindowActivated(window)
     }
 })
 
@@ -74,6 +80,16 @@ const unMinimizePrevMinimizedWindow = () => {
 
 
 const switchMode = () => {
+    workspace.screens.forEach((screen) => {
+        const tileManager = workspace.tilingForScreen(screen)
+        TileUtil.cleanUpTiles(tileManager.rootTile)
+    })
+    if (currentTileMode === TileMode.Stack) {
+        currentTileMode = TileMode.Default
+    } else {
+        currentTileMode = TileMode.Stack
+    }
+    TileUtil.resetAllWindowTiles(TileHelperProvider[currentTileMode])
 }
 
 registerShortcut("GetoEnlargeWindow", "GetoEnlargeWindow", "", enlargeWindow)

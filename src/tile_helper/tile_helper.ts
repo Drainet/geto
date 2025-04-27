@@ -10,4 +10,5 @@ export type TileHelper = {
     moveWindowRight: () => void
     moveWindowUp: () => void
     moveWindowDown: () => void
+    handleWindowActivated: (window: Window) => void
 }

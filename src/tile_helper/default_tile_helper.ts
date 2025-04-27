@@ -206,6 +206,10 @@ const moveWindowUp = () => {
     })
 }
 
+const handleWindowActivated = (window: Window) => {
+
+}
+
 
 export const DefaultTileHelper: TileHelper = {
     addWindowToScreen,
@@ -214,4 +218,5 @@ export const DefaultTileHelper: TileHelper = {
     moveWindowRight,
     moveWindowUp,
     moveWindowDown,
+    handleWindowActivated
 }
