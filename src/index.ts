@@ -84,10 +84,12 @@ const switchMode = () => {
         const tileManager = workspace.tilingForScreen(screen)
         TileUtil.cleanUpTiles(tileManager.rootTile)
     })
-    if (currentTileMode === TileMode.Stack) {
-        currentTileMode = TileMode.Default
-    } else {
+    if (currentTileMode === TileMode.Default) {
         currentTileMode = TileMode.Stack
+    } else if (currentTileMode === TileMode.Stack){
+        currentTileMode = TileMode.Queue
+    } else {
+        currentTileMode = TileMode.Default
     }
     TileUtil.resetAllWindowTiles(TileHelperProvider[currentTileMode])
 }

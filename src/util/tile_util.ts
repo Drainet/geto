@@ -41,7 +41,10 @@ const resetAllWindowTiles = (tileHelper: TileHelper) => {
         targetWindows.forEach((window) => {
             tileHelper.addWindowToScreen({window})
         })
-        log(`------ info of screen ${screen.name} after tile ------`)
+        if (workspace.activeWindow) {
+            tileHelper.handleWindowActivated(workspace.activeWindow)
+        }
+        log(`------ info of scjreen ${screen.name} after tile ------`)
         logTileTreeInfo(tileManager.rootTile)
         log(`------ end info of screen ${screen.name} ------`)
     }
