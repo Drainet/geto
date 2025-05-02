@@ -35,18 +35,14 @@ const resetAllWindowTiles = (tileHelper: TileHelper) => {
         const tileManager = workspace.tilingForScreen(screen);
         const rootTile = tileManager.rootTile
         cleanUpTiles(rootTile)
-        log(`------ info of screen ${screen.name} after clean ------`)
-        logTileTreeInfo(tileManager.rootTile)
-        log(`------ end info of screen ${screen.name} ------`)
+        logTileTreeInfo({event: "after clean", screen})
         targetWindows.forEach((window) => {
             tileHelper.addWindowToScreen({window})
         })
         if (workspace.activeWindow) {
             tileHelper.handleWindowActivated(workspace.activeWindow)
         }
-        log(`------ info of scjreen ${screen.name} after tile ------`)
-        logTileTreeInfo(tileManager.rootTile)
-        log(`------ end info of screen ${screen.name} ------`)
+        logTileTreeInfo({event: "after reset tile", screen})
     }
 
 }

@@ -14,14 +14,12 @@ export const windowMinimizedChangedHandler =
         if (window.minimized) {
             window.minimizedDate = new Date()
             tileHelperProvider[currentTileMode].removeFromTile({window})
-            log(`------ info of screen ${window.output.name} after ${window.resourceName} minimized ------`)
-            logTileTreeInfo(tileManager.rootTile)
-            log(`------ end info of screen ${window.output.name} ------`)
         } else {
             window.minimizedDate = undefined
             tileHelperProvider[currentTileMode].addWindowToScreen({window})
-            log(`------ info of screen ${window.output.name} after ${window.resourceName} un-minimized ------`)
-            logTileTreeInfo(tileManager.rootTile)
-            log(`------ end info of screen ${window.output.name} ------`)
         }
+        logTileTreeInfo({
+            event: `after ${window.resourceName} ${window.minimized ? "minimized" : "un-minimized"}`,
+            screen: window.output
+        })
     }

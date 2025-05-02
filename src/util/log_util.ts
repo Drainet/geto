@@ -45,8 +45,7 @@ const collectTileTreeInfo = (
     }
     const arrayForCurrentDepth = infoArray[depth]
     const rect = tile.absoluteGeometry;
-    const windowNames = tile.windows.map((window) => window.resourceName).join(",")
-    const debugInfo = `pI: ${parentIndex}, i: ${currentIndex}, r: {x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height}}, w: {${TileUtil.windowForTile(tile)?.resourceName}}, l: ${tile.isLayout}, cR: ${tile.canBeRemoved}`
+    const debugInfo = `{x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height}}, "${TileUtil.windowForTile(tile)?.resourceName ?? "no window"}", parent index: ${parentIndex}, index: ${currentIndex}, isLayout: ${tile.isLayout}`
     arrayForCurrentDepth.push(debugInfo)
     for (let i = 0; i < tile.tiles.length; i++) {
         const childTile = tile.tiles[i]
@@ -60,11 +59,19 @@ const collectTileTreeInfo = (
     }
 }
 
-export const logTileTreeInfo = (rootTile: Tile) => {
+export const logTileTreeInfo = (arg: {
+    event: string,
+    screen: Output
+}) => {
+    const {event, screen} = arg
+    const tileManager = workspace.tilingForScreen(screen)
+    const rootTile = tileManager.rootTile
+    log(`⎯⎯⎯⎯⎯⎯ info of screen ${screen.name} after ${event} ⎯⎯⎯⎯⎯⎯`)
     const infoArray: string[][] = []
     collectTileTreeInfo(rootTile, 0, 0, 0, infoArray)
     infoArray.forEach((infoStrings) => {
         const resultString = `${infoStrings.map((s) => `[${s}]`).join(",\n")} `
         log(resultString)
     })
+    log(`⎯⎯⎯⎯⎯⎯ end info of screen ${screen.name} ⎯⎯⎯⎯⎯⎯`)
 }

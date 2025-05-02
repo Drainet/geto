@@ -143,9 +143,10 @@ const moveWindowToDirection = (arg: {
             otherWindow.tile = tile
             window.tile = otherWindowTile
         }
-        const screen = window.output
-        const tileManager = workspace.tilingForScreen(screen)
-        logTileTreeInfo(tileManager.rootTile)
+        logTileTreeInfo({
+            event: `after ${window.resourceName} moved direction`,
+            screen: window.output
+        })
     }
 }
 
