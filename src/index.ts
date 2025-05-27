@@ -85,8 +85,6 @@ const switchMode = () => {
         TileUtil.cleanUpTiles(tileManager.rootTile)
     })
     if (currentTileMode === TileMode.Default) {
-        currentTileMode = TileMode.Stack
-    } else if (currentTileMode === TileMode.Stack){
         currentTileMode = TileMode.Queue
     } else {
         currentTileMode = TileMode.Default
