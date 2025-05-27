@@ -89,6 +89,7 @@ interface Window {
 
     //custom property, not from kwin
     minimizedDate?: Date
+    lastActivatedDate?: Date
 }
 
 declare function registerShortcut(title: string, text: string, keySequence: string, callback: () => void)

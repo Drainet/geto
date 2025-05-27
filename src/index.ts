@@ -35,6 +35,7 @@ workspace.windowRemoved.connect((window) => {
 
 workspace.windowActivated.connect((window) => {
     if (isApplicationWindow(window)) {
+        window.lastActivatedDate = new Date()
         TileHelperProvider[currentTileMode].handleWindowActivated(window)
     }
 })

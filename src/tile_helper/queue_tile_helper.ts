@@ -1,7 +1,6 @@
 import {TileHelper} from "./tile_helper";
-import {log, TileUtil} from "../util";
+import {TileUtil} from "../util";
 import {LayoutDirection, QtEdge} from "../kwin_enum";
-import {TileMode} from "./tile_mode";
 
 const removeFromTile = (
     arg: { window: Window } | { tile: Tile }
@@ -32,8 +31,59 @@ const addWindowToScreen = (arg: {
         const heightResizeDiff = rootTile.absoluteGeometry.height - (tile.relativeGeometry.height * rootHeight)
         tile.resizeByPixels(widthResizeDiff, QtEdge.Right)
         tile.resizeByPixels(heightResizeDiff, QtEdge.Bottom)
-        window.tile = null
-        window.tile = tile
+
+        let insertIndex = tileCount - 1
+        let previousActiveWindow: Window | undefined
+        if (workspace.activeWindow === window) {
+            if (tileCount > 1) {
+                previousActiveWindow = rootTile.tiles
+                    .map((tile) => TileUtil.windowForTile(tile))
+                    .filter((window): window is Window => !!window && window.output === screen)
+                    .reduce<Window | undefined>((latestWindow, currentWindow) => {
+                        if (!latestWindow ||
+                            (currentWindow.lastActivatedDate &&
+                             (!latestWindow.lastActivatedDate ||
+                              currentWindow.lastActivatedDate > latestWindow.lastActivatedDate))) {
+                            return currentWindow;
+                        }
+                        return latestWindow;
+                    }, undefined);
+            } else {
+                previousActiveWindow = undefined
+            }
+        } else {
+            previousActiveWindow = workspace.activeWindow
+        }
+        if (previousActiveWindow && previousActiveWindow.output === screen && previousActiveWindow.tile) {
+            const activeWindowIndex = rootTile.tiles.indexOf(previousActiveWindow.tile)
+            if (activeWindowIndex !== -1) {
+                insertIndex = activeWindowIndex + 1
+            }
+        }
+
+        if (insertIndex < tileCount - 1) {
+            const windowsToBeShifted: Window[] = []
+            for (let i = insertIndex; i < tileCount - 1; i++) {
+                const currentTile = rootTile.tiles[i]
+                const tileWindow = TileUtil.windowForTile(currentTile)
+                if (tileWindow) {
+                    windowsToBeShifted.push(tileWindow)
+                }
+            }
+
+            for (let i = 0; i < windowsToBeShifted.length; i++) {
+                const tileWindow = windowsToBeShifted[i]
+                const nextTile = rootTile.tiles[insertIndex + i + 1]
+                tileWindow.tile = null
+                tileWindow.tile = nextTile
+            }
+
+            window.tile = null
+            window.tile = rootTile.tiles[insertIndex]
+        } else {
+            window.tile = null
+            window.tile = rootTile.tiles[tileCount - 1]
+        }
         rootTile.tiles.forEach((tile) => {
             const widthResizeDiff = targetWidth - (tile.relativeGeometry.width * rootWidth)
             tile.resizeByPixels(widthResizeDiff, QtEdge.Right)
@@ -43,6 +93,9 @@ const addWindowToScreen = (arg: {
                 window.tile = tile
             }
         })
+    }
+    if (window === workspace.activeWindow) {
+        handleWindowActivated(window)
     }
 }
 
