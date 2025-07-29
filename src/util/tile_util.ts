@@ -12,12 +12,15 @@ const collectAllTiles = (tile: Tile): Tile[] => {
 
 const removeNoWindowTiles = (tileHelper: TileHelper) => {
     workspace.screens.forEach((screen) => {
-        const allTiles = collectAllTiles(workspace.tilingForScreen(screen).rootTile)
-        allTiles.forEach((tile) => {
-            if (!tile.tiles.length && tile.canBeRemoved && !windowForTile(tile)) {
-                tileHelper.removeFromTile({tile})
-            }
-        })
+        const getTargetTiles = () => {
+            return collectAllTiles(workspace.tilingForScreen(screen).rootTile)
+                .filter((tile) => tile.canBeRemoved && !tile.tiles.length && !windowForTile(tile))
+        }
+        let targetTiles = getTargetTiles()
+        while (targetTiles.length) {
+            tileHelper.removeFromTile({tile: targetTiles[0]})
+            targetTiles = getTargetTiles()
+        }
     })
 }
 
