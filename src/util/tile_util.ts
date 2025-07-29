@@ -1,4 +1,4 @@
-import {isApplicationWindow, log, logTileTreeInfo} from "./index";
+import {isApplicationWindow, logTileTreeInfo} from "./index";
 import {TileHelper} from "../tile_helper";
 
 const collectAllTiles = (tile: Tile): Tile[] => {
@@ -44,7 +44,6 @@ const resetAllWindowTiles = (tileHelper: TileHelper) => {
         }
         logTileTreeInfo({event: "after reset tile", screen})
     }
-
 }
 
 const tileExistInTiles = (tile: Tile, rootTile: Tile): boolean => {
@@ -62,19 +61,19 @@ const tileExistInTiles = (tile: Tile, rootTile: Tile): boolean => {
 }
 
 const cleanUpTiles = (rootTile: Tile) => {
-    const allRemovableTiles = collectAllTiles(rootTile)
-    allRemovableTiles.forEach((tile) => {
-        tile.windows.forEach((window) => {
-            window.tile = null
-        })
+    let allRemovableTiles = collectAllTiles(rootTile)
+        .filter((tile) => tile.canBeRemoved)
+
+    while (allRemovableTiles.length) {
+        const tile = allRemovableTiles[0]
         const window = windowForTile(tile)
         if (window) {
             window.tile = null
         }
-        if (tile.canBeRemoved) {
-            tile.remove()
-        }
-    })
+        tile.remove()
+        allRemovableTiles = collectAllTiles(rootTile)
+            .filter((tile) => tile.canBeRemoved)
+    }
 }
 
 const screenForTile = (tile: Tile): Output | undefined => {
