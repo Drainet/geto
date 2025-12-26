@@ -77,6 +77,12 @@ const cleanUpTiles = (rootTile: Tile) => {
         allRemovableTiles = collectAllTiles(rootTile)
             .filter((tile) => tile.canBeRemoved)
     }
+    if (!rootTile.canBeRemoved) { 
+        const window = windowForTile(rootTile)
+        if (window) { 
+            window.tile = null
+        }
+    }
 }
 
 const screenForTile = (tile: Tile): Output | undefined => {
