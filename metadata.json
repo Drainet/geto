@@ -5,7 +5,8 @@
     "Icon": "preferences-system-windows",
     "Authors": [
       {
-        "Email": "drain.cy.chang@gmail.com", "Name": "Drain"
+        "Email": "drain.cy.chang@gmail.com",
+        "Name": "Drain"
       }
     ],
     "Id": "geto",

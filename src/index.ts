@@ -1,14 +1,9 @@
 import { isApplicationWindow, log, TileUtil } from "./util";
 import { TileMode } from "./tile_helper";
-import {
-  windowMinimizedChangedHandler,
-  windowOutputChangedHandler,
-} from "./signal_handlers";
+import { windowMinimizedChangedHandler, windowOutputChangedHandler } from "./signal_handlers";
 import { TileHelperProvider } from "./tile_helper/tile_helper_provider";
 
-log(
-  "------------------ new geto kwin script session started ------------------",
-);
+log("------------------ new geto kwin script session started ------------------");
 
 let currentTileMode = TileMode.Default;
 
@@ -87,10 +82,7 @@ const unMinimizePrevMinimizedWindow = () => {
   let targetWindow: Window | undefined;
   for (let i = 0; i < minimizedWindows.length; i++) {
     const current = minimizedWindows[i];
-    if (
-      (current.minimizedDate?.getTime() ?? 0) >
-      (targetWindow?.minimizedDate?.getTime() ?? 0)
-    ) {
+    if ((current.minimizedDate?.getTime() ?? 0) > (targetWindow?.minimizedDate?.getTime() ?? 0)) {
       targetWindow = current;
     }
   }

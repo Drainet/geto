@@ -23,7 +23,7 @@
     "noEmit": true, // Recommended: Use tsc ONLY for type checking
 
     /* Project Structure */
-    "rootDir": "./src",
+    "rootDir": "./src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

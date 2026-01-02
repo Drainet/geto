@@ -2,18 +2,20 @@
   "name": "geto",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js", 
-	"scripts": {
-		"typecheck": "tsc --noEmit",
-		"build": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6",
-		"build:dev": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6; $HOME/bin/kwin_reinstall; $HOME/bin/kwin_journal;",
-		"watch": "esbuild src/index.ts --bundle --outfile=dist/bundle.js --format=iife --platform=neutral --target=es6 --sourcemap --watch"
-	},
+  "main": "index.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6",
+    "build:dev": "npm run typecheck && esbuild src/index.ts --bundle --outfile=contents/code/main.js --format=iife --platform=neutral --target=es6; $HOME/bin/kwin_reinstall; $HOME/bin/kwin_journal;",
+    "watch": "esbuild src/index.ts --bundle --outfile=dist/bundle.js --format=iife --platform=neutral --target=es6 --sourcemap --watch",
+    "format": "prettier --write ."
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.25.2",
+    "prettier": "^3.7.4",
     "typescript": "^5.8.2"
   }
 }
