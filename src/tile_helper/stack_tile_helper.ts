@@ -1,7 +1,6 @@
 import { TileHelper } from "./tile_helper";
 import { log, TileUtil } from "../util";
 import { LayoutDirection, QtEdge } from "../kwin_enum";
-import { TileMode } from "./tile_mode";
 
 const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
   const isWindowArg = (arg: any): arg is { window: Window } => {
