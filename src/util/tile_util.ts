@@ -1,8 +1,10 @@
+import type { CommonTile } from "../tile_common";
+import { getWindowTile, setWindowTile, wrapKWinTileManager } from "../default_kwin_tile";
 import { isApplicationWindow, logTileTreeInfo } from "./index";
 import { TileHelper } from "../tile_helper";
 
-const collectAllTiles = (tile: Tile): Tile[] => {
-  const results: Tile[] = [];
+const collectAllTiles = (tile: CommonTile): CommonTile[] => {
+  const results: CommonTile[] = [];
   results.push(tile);
   tile.tiles.forEach((tile) => {
     results.push(...collectAllTiles(tile));
@@ -13,7 +15,8 @@ const collectAllTiles = (tile: Tile): Tile[] => {
 const removeNoWindowTiles = (tileHelper: TileHelper) => {
   workspace.screens.forEach((screen) => {
     const getTargetTiles = () => {
-      return collectAllTiles(workspace.tilingForScreen(screen).rootTile).filter(
+      const rootTile = wrapKWinTileManager(workspace.tilingForScreen(screen)).rootTile;
+      return collectAllTiles(rootTile).filter(
         (tile) => tile.canBeRemoved && !tile.tiles.length && !windowForTile(tile),
       );
     };
@@ -37,7 +40,7 @@ const resetAllWindowTiles = (tileHelper: TileHelper) => {
       continue;
     }
 
-    const tileManager = workspace.tilingForScreen(screen);
+    const tileManager = wrapKWinTileManager(workspace.tilingForScreen(screen));
     const rootTile = tileManager.rootTile;
     cleanUpTiles(rootTile);
     logTileTreeInfo({ event: "after clean", screen });
@@ -51,7 +54,7 @@ const resetAllWindowTiles = (tileHelper: TileHelper) => {
   }
 };
 
-const tileExistInTiles = (tile: Tile, rootTile: Tile): boolean => {
+const tileExistInTiles = (tile: CommonTile, rootTile: CommonTile): boolean => {
   if (tile === rootTile) {
     return true;
   }
@@ -65,14 +68,14 @@ const tileExistInTiles = (tile: Tile, rootTile: Tile): boolean => {
   return false;
 };
 
-const cleanUpTiles = (rootTile: Tile) => {
+const cleanUpTiles = (rootTile: CommonTile) => {
   let allRemovableTiles = collectAllTiles(rootTile).filter((tile) => tile.canBeRemoved);
 
   while (allRemovableTiles.length) {
     const tile = allRemovableTiles[0];
     const window = windowForTile(tile);
     if (window) {
-      window.tile = null;
+      setWindowTile(window, null);
     }
     tile.remove();
     allRemovableTiles = collectAllTiles(rootTile).filter((tile) => tile.canBeRemoved);
@@ -80,15 +83,15 @@ const cleanUpTiles = (rootTile: Tile) => {
   if (!rootTile.canBeRemoved) {
     const window = windowForTile(rootTile);
     if (window) {
-      window.tile = null;
+      setWindowTile(window, null);
     }
   }
 };
 
-const screenForTile = (tile: Tile): Output | undefined => {
+const screenForTile = (tile: CommonTile): Output | undefined => {
   for (let i = 0; i < workspace.screens.length; i++) {
     const screen = workspace.screens[i];
-    const tileManager = workspace.tilingForScreen(screen);
+    const tileManager = wrapKWinTileManager(workspace.tilingForScreen(screen));
     if (tileExistInTiles(tile, tileManager.rootTile)) {
       return screen;
     }
@@ -96,11 +99,12 @@ const screenForTile = (tile: Tile): Output | undefined => {
   return undefined;
 };
 
-const windowForTile = (tile: Tile): Window | undefined => {
+const windowForTile = (tile: CommonTile): Window | undefined => {
   const windowList = workspace.windowList();
   for (let i = 0; i < windowList.length; i++) {
     const window = windowList[i];
-    if (window.tile === tile) {
+    const windowTile = getWindowTile(window);
+    if (windowTile === tile) {
       return window;
     }
   }

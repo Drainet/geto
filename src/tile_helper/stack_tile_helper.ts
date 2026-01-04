@@ -1,20 +1,22 @@
+import type { CommonTile } from "../tile_common";
+import { getWindowTile, setWindowTile, wrapKWinTileManager } from "../default_kwin_tile";
 import { TileHelper } from "./tile_helper";
 import { log, TileUtil } from "../util";
 import { LayoutDirection, QtEdge } from "../kwin_enum";
 
-const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
-  const isWindowArg = (arg: any): arg is { window: Window } => {
-    return "window" in arg;
-  };
+const removeFromTile = (arg: { window: Window } | { tile: CommonTile }) => {
+  const isWindowArg = (arg: { window: Window } | { tile: CommonTile }): arg is { window: Window } =>
+    "window" in arg;
   let window: Window | undefined;
-  let tile: Tile | undefined;
+  let tile: CommonTile | undefined;
   if (isWindowArg(arg)) {
     window = arg.window;
-    if (!window.tile) {
+    const windowTile = getWindowTile(window);
+    if (!windowTile) {
       log("error, window's tile can't be null");
       return;
     }
-    tile = window.tile;
+    tile = windowTile;
   } else {
     window = undefined;
     tile = arg.tile;
@@ -25,7 +27,7 @@ const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
     return;
   }
   if (window) {
-    window.tile = null;
+    setWindowTile(window, null);
   }
   tile.remove();
   const currentWindows = parentTile.tiles.map((tile) => {
@@ -45,8 +47,8 @@ const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
 
 const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
   const { window, screen } = arg;
-  const tileManager = workspace.tilingForScreen(window.output);
-  const rootTile: Tile = tileManager.rootTile;
+  const tileManager = wrapKWinTileManager(workspace.tilingForScreen(window.output));
+  const rootTile = tileManager.rootTile;
   addWindowToTile({
     window,
     parentTile: rootTile,
@@ -60,7 +62,7 @@ const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
   });
 };
 
-const addWindowToTile = (arg: { window: Window; parentTile: Tile; depth: number }) => {
+const addWindowToTile = (arg: { window: Window; parentTile: CommonTile; depth: number }) => {
   const { window, parentTile, depth } = arg;
   const screen = window?.output;
   if (screen) {
@@ -78,8 +80,8 @@ const addWindowToTile = (arg: { window: Window; parentTile: Tile; depth: number 
       parentTile.absoluteGeometry.height - 40 * depth - tile.relativeGeometry.height * rootHeight;
     tile.resizeByPixels(widthTarget, QtEdge.Right);
     tile.resizeByPixels(heightTarget, QtEdge.Bottom);
-    window.tile = null;
-    window.tile = tile;
+    setWindowTile(window, null);
+    setWindowTile(window, tile);
   }
 };
 
@@ -101,7 +103,7 @@ const moveWindowDown = () => {};
 const moveWindowUp = () => {};
 
 const handleWindowActivated = (window: Window) => {
-  const tile = window.tile;
+  const tile = getWindowTile(window);
   if (!tile || !tile.parent) {
     log("error: tile is null");
     return;
@@ -126,7 +128,7 @@ const handleWindowActivated = (window: Window) => {
   tiles.forEach((tile) => {
     const window = TileUtil.windowForTile(tile);
     if (window) {
-      window.tile = null;
+      setWindowTile(window, null);
     }
   });
   const popCount = windows.length - 1 - index;
@@ -139,7 +141,7 @@ const handleWindowActivated = (window: Window) => {
     }
   }
   for (let i = 0; i < tiles?.length; i++) {
-    windows[i].tile = tiles[i];
+    setWindowTile(windows[i], tiles[i]);
   }
 
   tiles.forEach((tile) => {

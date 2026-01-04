@@ -1,15 +1,17 @@
+import type { CommonTile } from "../tile_common";
+import { getWindowTile, setWindowTile, wrapKWinTileManager } from "../default_kwin_tile";
 import { TileHelper } from "./tile_helper";
 import { TileUtil } from "../util";
 import { LayoutDirection, QtEdge } from "../kwin_enum";
 
-const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
+const removeFromTile = (arg: { window: Window } | { tile: CommonTile }) => {
   TileUtil.resetAllWindowTiles(QueueTileHelper);
 };
 
 const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
   const { window } = arg;
-  const tileManager = workspace.tilingForScreen(window.output);
-  const rootTile: Tile = tileManager.rootTile;
+  const tileManager = wrapKWinTileManager(workspace.tilingForScreen(window.output));
+  const rootTile = tileManager.rootTile;
   const screen = window?.output;
   if (screen) {
     rootTile.split(LayoutDirection.Floating);
@@ -52,12 +54,9 @@ const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
     } else {
       previousActiveWindow = workspace.activeWindow;
     }
-    if (
-      previousActiveWindow &&
-      previousActiveWindow.output === screen &&
-      previousActiveWindow.tile
-    ) {
-      const activeWindowIndex = rootTile.tiles.indexOf(previousActiveWindow.tile);
+    const previousActiveTile = previousActiveWindow ? getWindowTile(previousActiveWindow) : null;
+    if (previousActiveWindow && previousActiveWindow.output === screen && previousActiveTile) {
+      const activeWindowIndex = rootTile.tiles.indexOf(previousActiveTile);
       if (activeWindowIndex !== -1) {
         insertIndex = activeWindowIndex + 1;
       }
@@ -76,23 +75,23 @@ const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
       for (let i = 0; i < windowsToBeShifted.length; i++) {
         const tileWindow = windowsToBeShifted[i];
         const nextTile = rootTile.tiles[insertIndex + i + 1];
-        tileWindow.tile = null;
-        tileWindow.tile = nextTile;
+        setWindowTile(tileWindow, null);
+        setWindowTile(tileWindow, nextTile);
       }
 
-      window.tile = null;
-      window.tile = rootTile.tiles[insertIndex];
+      setWindowTile(window, null);
+      setWindowTile(window, rootTile.tiles[insertIndex]);
     } else {
-      window.tile = null;
-      window.tile = rootTile.tiles[tileCount - 1];
+      setWindowTile(window, null);
+      setWindowTile(window, rootTile.tiles[tileCount - 1]);
     }
     rootTile.tiles.forEach((tile) => {
       const widthResizeDiff = targetWidth - tile.relativeGeometry.width * rootWidth;
       tile.resizeByPixels(widthResizeDiff, QtEdge.Right);
       const window = TileUtil.windowForTile(tile);
       if (window) {
-        window.tile = null;
-        window.tile = tile;
+        setWindowTile(window, null);
+        setWindowTile(window, tile);
       }
     });
   }
@@ -103,20 +102,21 @@ const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
 
 const moveWindowLeft = () => {
   const window = workspace.activeWindow;
-  if (window && window?.output && window.tile) {
-    const tile = window.tile;
-    const tileManager = workspace.tilingForScreen(window.output);
-    const rootTile: Tile = tileManager.rootTile;
+  const activeTile = window ? getWindowTile(window) : null;
+  if (window && window?.output && activeTile) {
+    const tile = activeTile;
+    const tileManager = wrapKWinTileManager(workspace.tilingForScreen(window.output));
+    const rootTile = tileManager.rootTile;
     const tiles = rootTile.tiles;
-    const index = tiles.indexOf(window.tile);
+    const index = tiles.indexOf(tile);
     if (index !== 0) {
       const leftTile = tiles[index - 1];
       const leftWindow = TileUtil.windowForTile(leftTile);
       if (leftWindow) {
-        leftWindow.tile = null;
-        window.tile = null;
-        leftWindow.tile = tile;
-        window.tile = leftTile;
+        setWindowTile(leftWindow, null);
+        setWindowTile(window, null);
+        setWindowTile(leftWindow, tile);
+        setWindowTile(window, leftTile);
         handleWindowActivated(window);
       }
     }
@@ -125,20 +125,21 @@ const moveWindowLeft = () => {
 
 const moveWindowRight = () => {
   const window = workspace.activeWindow;
-  if (window && window?.output && window.tile) {
-    const tile = window.tile;
-    const tileManager = workspace.tilingForScreen(window.output);
-    const rootTile: Tile = tileManager.rootTile;
+  const activeTile = window ? getWindowTile(window) : null;
+  if (window && window?.output && activeTile) {
+    const tile = activeTile;
+    const tileManager = wrapKWinTileManager(workspace.tilingForScreen(window.output));
+    const rootTile = tileManager.rootTile;
     const tiles = rootTile.tiles;
-    const index = tiles.indexOf(window.tile);
+    const index = tiles.indexOf(tile);
     if (index !== tiles.length - 1) {
       const rightTile = tiles[index + 1];
       const rightWindow = TileUtil.windowForTile(rightTile);
       if (rightWindow) {
-        rightWindow.tile = null;
-        window.tile = null;
-        rightWindow.tile = tile;
-        window.tile = rightTile;
+        setWindowTile(rightWindow, null);
+        setWindowTile(window, null);
+        setWindowTile(rightWindow, tile);
+        setWindowTile(window, rightTile);
         handleWindowActivated(window);
       }
     }
@@ -150,8 +151,8 @@ const moveWindowDown = () => {};
 const moveWindowUp = () => {};
 
 const handleWindowActivated = (window: Window) => {
-  const tileManager = workspace.tilingForScreen(window.output);
-  const rootTile: Tile = tileManager.rootTile;
+  const tileManager = wrapKWinTileManager(workspace.tilingForScreen(window.output));
+  const rootTile = tileManager.rootTile;
   const allWindows = rootTile.tiles.map((tile) => {
     const window = TileUtil.windowForTile(tile);
     if (!window) {

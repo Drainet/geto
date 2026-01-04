@@ -1,3 +1,4 @@
+import { setWindowTile, wrapKWinTileManager } from "./default_kwin_tile";
 import { isApplicationWindow, log, TileUtil } from "./util";
 import { TileMode } from "./tile_helper";
 import { windowMinimizedChangedHandler, windowOutputChangedHandler } from "./signal_handlers";
@@ -49,7 +50,7 @@ workspace.windowActivated.connect((window) => {
 });
 
 workspace.windowList().forEach((window) => {
-  window.tile = null;
+  setWindowTile(window, null);
   window.minimizedChanged.connect(
     windowMinimizedChangedHandler({
       window,
@@ -93,7 +94,7 @@ const unMinimizePrevMinimizedWindow = () => {
 
 const switchMode = () => {
   workspace.screens.forEach((screen) => {
-    const tileManager = workspace.tilingForScreen(screen);
+    const tileManager = wrapKWinTileManager(workspace.tilingForScreen(screen));
     TileUtil.cleanUpTiles(tileManager.rootTile);
   });
   if (currentTileMode === TileMode.Default) {

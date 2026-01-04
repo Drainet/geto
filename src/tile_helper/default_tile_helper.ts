@@ -1,20 +1,22 @@
+import type { CommonTile } from "../tile_common";
+import { getWindowTile, setWindowTile, wrapKWinTileManager } from "../default_kwin_tile";
 import { log, logTileTreeInfo, TileUtil } from "../util";
 import { LayoutDirection } from "../kwin_enum";
 import { TileHelper } from "./tile_helper";
 
-const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
-  const isWindowArg = (arg: any): arg is { window: Window } => {
-    return "window" in arg;
-  };
+const removeFromTile = (arg: { window: Window } | { tile: CommonTile }) => {
+  const isWindowArg = (arg: { window: Window } | { tile: CommonTile }): arg is { window: Window } =>
+    "window" in arg;
   let window: Window | undefined;
-  let tile: Tile;
+  let tile: CommonTile;
   if (isWindowArg(arg)) {
     window = arg.window;
-    if (!window.tile) {
+    const windowTile = getWindowTile(window);
+    if (!windowTile) {
       log("error, window's tile can't be null");
       return;
     }
-    tile = window.tile;
+    tile = windowTile;
   } else {
     window = undefined;
     tile = arg.tile;
@@ -41,15 +43,15 @@ const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
     }
 
     if (window) {
-      window.tile = null;
+      setWindowTile(window, null);
     }
     tile?.remove();
-    otherWindow.tile = null;
+    setWindowTile(otherWindow, null);
     tileForOtherWindow.remove();
-    otherWindow.tile = parentTile;
+    setWindowTile(otherWindow, parentTile);
   } else {
     if (window) {
-      window.tile = null;
+      setWindowTile(window, null);
     }
     if (tile?.canBeRemoved) {
       tile?.remove();
@@ -59,12 +61,12 @@ const removeFromTile = (arg: { window: Window } | { tile: Tile }) => {
 
 const addWindowToScreen = (arg: { window: Window; screen?: Output }) => {
   const { window, screen } = arg;
-  const tileManager = workspace.tilingForScreen(screen ?? window.output);
+  const tileManager = wrapKWinTileManager(workspace.tilingForScreen(screen ?? window.output));
   const rootTile = tileManager.rootTile;
   addWindowToTile({ window, tile: rootTile });
 };
 
-const addWindowToTile = (arg: { window: Window; tile: Tile }) => {
+const addWindowToTile = (arg: { window: Window; tile: CommonTile }) => {
   const { window, tile } = arg;
   const windowForRootTile = TileUtil.windowForTile(tile);
   if (windowForRootTile) {
@@ -81,13 +83,13 @@ const addWindowToTile = (arg: { window: Window; tile: Tile }) => {
       }
     }
     const childTiles = tile.split(splitDirection);
-    windowForRootTile.tile = null;
-    windowForRootTile.tile = childTiles[0];
-    window.tile = childTiles[1];
+    setWindowTile(windowForRootTile, null);
+    setWindowTile(windowForRootTile, childTiles[0]);
+    setWindowTile(window, childTiles[1]);
   } else {
     const childTiles = tile.tiles;
     if (childTiles.length) {
-      const getChildCount = (tile: Tile) => {
+      const getChildCount = (tile: CommonTile) => {
         return TileUtil.collectAllTiles(tile).filter((tile) => !tile.isLayout).length;
       };
       if (getChildCount(childTiles[0]) > getChildCount(childTiles[1])) {
@@ -96,7 +98,7 @@ const addWindowToTile = (arg: { window: Window; tile: Tile }) => {
         addWindowToTile({ window, tile: childTiles[0] });
       }
     } else {
-      window.tile = tile;
+      setWindowTile(window, tile);
     }
   }
 };
@@ -110,7 +112,7 @@ const moveWindowToDirection = (arg: {
   ) => { should: boolean; indexAfterChangeLayoutDirection: number };
 }) => {
   const { window, shouldSwitchWithOther, shouldChangeLayoutDirection } = arg;
-  const tile = window?.tile;
+  const tile = window ? getWindowTile(window) : null;
   const parentTile = tile?.parent;
   const sameLevelTiles = parentTile?.tiles;
   if (window && tile && parentTile && sameLevelTiles?.length) {
@@ -125,21 +127,21 @@ const moveWindowToDirection = (arg: {
         tile.absoluteGeometry.y === otherWindowTile.absoluteGeometry.y
           ? LayoutDirection.Vertical
           : LayoutDirection.Horizontal;
-      otherWindow.tile = null;
-      window.tile = null;
+      setWindowTile(otherWindow, null);
+      setWindowTile(window, null);
       tile.remove();
       otherWindowTile.remove();
       const childTiles = parentTile.split(newLayoutDirection);
-      otherWindow.tile = childTiles[(indexAfterChangeLayoutDirection + 1) % 2];
-      window.tile = childTiles[indexAfterChangeLayoutDirection];
+      setWindowTile(otherWindow, childTiles[(indexAfterChangeLayoutDirection + 1) % 2]);
+      setWindowTile(window, childTiles[indexAfterChangeLayoutDirection]);
     } else if (
       otherWindow &&
       shouldSwitchWithOther(tile.absoluteGeometry, otherWindowTile.absoluteGeometry)
     ) {
-      otherWindow.tile = null;
-      window.tile = null;
-      otherWindow.tile = tile;
-      window.tile = otherWindowTile;
+      setWindowTile(otherWindow, null);
+      setWindowTile(window, null);
+      setWindowTile(otherWindow, tile);
+      setWindowTile(window, otherWindowTile);
     }
     logTileTreeInfo({
       event: `after ${window.resourceName} moved direction`,

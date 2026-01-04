@@ -1,3 +1,5 @@
+import type { CommonTile } from "../tile_common";
+import { wrapKWinTileManager } from "../default_kwin_tile";
 import { isApplicationWindow, TileUtil } from "./index";
 
 export const log = (message: string) => {
@@ -28,7 +30,7 @@ export const logWindowInfo = (event: string, window: Window) => {
   );
 };
 
-export const logTileInfo = (event: string, tile: Tile) => {
+export const logTileInfo = (event: string, tile: CommonTile) => {
   log(
     JSON.stringify(
       {
@@ -45,7 +47,7 @@ export const logTileInfo = (event: string, tile: Tile) => {
 };
 
 const collectTileTreeInfo = (
-  tile: Tile,
+  tile: CommonTile,
   depth: number = 0,
   parentIndex: number,
   currentIndex: number,
@@ -66,7 +68,7 @@ const collectTileTreeInfo = (
 
 export const logTileTreeInfo = (arg: { event: string; screen: Output }) => {
   const { event, screen } = arg;
-  const tileManager = workspace.tilingForScreen(screen);
+  const tileManager = wrapKWinTileManager(workspace.tilingForScreen(screen));
   const rootTile = tileManager.rootTile;
   log(`⎯⎯⎯⎯⎯⎯ info of screen ${screen.name} after ${event} ⎯⎯⎯⎯⎯⎯`);
   const infoArray: string[][] = [];
